@@ -1,8 +1,55 @@
+#include <stdio.h>
+#include <ftdi.h>
+
 #include "serial.h"
+
+#include <ftdi.h>
+
+// Default VID:PID=0x0403:0x6001
+int vid=0x0403;
+int pid=0x6001;
+
+int ftdi_list_all() {
+    struct ftdi_context *fc = ftdi_new();
+    
+    if (fc == NULL) { fprintf(stderr, "ftdi_init failed\n"); return -1; }
+    
+    struct ftdi_device_list * devlist = NULL;
+    struct ftdi_device_list * ptr;
+    
+    int count = ftdi_usb_find_all(fc, &devlist, vid, pid);
+    
+    switch (count) {
+      case -1: fprintf(stderr, "usb_find_buses failed\n"); return -1; break;
+      case -2: fprintf(stderr, "usb_find_devices failed\n"); return -1; break;
+      case -3: fprintf(stderr, "out of memory\n"); return -1; break;
+    }
+    
+    ftdi_free(fc);
+    
+    fc=ftdi_new();
+    
+    ptr=devlist;
+    
+    char mnf[33];
+    char desc[33];
+    char serial[33];
+      
+    for (int i=0; i<count; i++) {
+      int result = ftdi_usb_get_strings(fc, ptr, mnf, 32,  desc, 32, serial, 32);
+      
+      printf("%d [%d:%d] %s %s %s\n", i, vid, pid, serial, mnf, desc);
+      ptr = ptr->next;
+    }
+    
+    if (devlist != NULL) ftdi_list_free(&devlist);
+    
+}
+
 
 int serial_read_fully(uint8_t *buffer, int count, int timeout)
 {
-	struct pollfd fds;
+/*	struct pollfd fds;
 	int rc;
 	int len;
 	uint8_t *ptr = buffer;
@@ -35,11 +82,13 @@ int serial_read_fully(uint8_t *buffer, int count, int timeout)
 	}
 
 	return ptr - buffer;
+*/
+  
 }
 
 int serial_write_fully(const uint8_t *buffer, int count, int timeout)
 {
-	struct pollfd fds;
+/*	struct pollfd fds;
 	int rc;
 	int len;
 	const uint8_t *ptr = buffer;
@@ -72,9 +121,11 @@ int serial_write_fully(const uint8_t *buffer, int count, int timeout)
 	}
 
 	return ptr - buffer;
+*/
+  
 }
 
-static const ReadWrite ftdiRW {
+static const ReadWrite ftdiRW = {
   serial_read_fully,
   serial_write_fully
 };

@@ -90,5 +90,6 @@ int main(int argc, char **argv) {
     be reflected in arguments. */
   argp_parse (&argp, argc, argv, 0, 0, &arguments);
   
+  return (ftdi_list_all()>=0) ? 0:-1;
     return 0;
 }
