@@ -25,10 +25,6 @@ int ftdi_list_all() {
       case -3: fprintf(stderr, "out of memory\n"); return -1; break;
     }
     
-    ftdi_free(fc);
-    
-    fc=ftdi_new();
-    
     ptr=devlist;
     
     char mnf[33];
@@ -36,6 +32,7 @@ int ftdi_list_all() {
     char serial[33];
       
     for (int i=0; i<count; i++) {
+      //TODO: fix usb_open SIGSEGV
       int result = ftdi_usb_get_strings(fc, ptr, mnf, 32,  desc, 32, serial, 32);
       
       printf("%d [%d:%d] %s %s %s\n", i, vid, pid, serial, mnf, desc);
