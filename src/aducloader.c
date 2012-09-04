@@ -28,7 +28,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <termios.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <getopt.h>
