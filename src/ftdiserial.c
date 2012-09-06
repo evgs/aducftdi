@@ -72,12 +72,13 @@ int ftdiListAll() {
     
     int count = ftdi_usb_find_all(fc, &devlist, vid, pid);
     
-    switch (count) {
-      case -1: fprintf(stderr, "usb_find_buses failed\n"); return -1; break;
-      case -2: fprintf(stderr, "usb_find_devices failed\n"); return -1; break;
-      case -3: fprintf(stderr, "out of memory\n"); return -1; break;
+    if (count<0) {
+      fprintf(stderr, "unable to enumerate ftdi devices: %s",
+	      ftdi_get_error_string(fc)
+	     );
+      return -1;
     }
-    
+ 
     ptr=devlist;
     
     char mnf[33];
