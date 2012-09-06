@@ -24,8 +24,30 @@ void zzz(long time) {
 int vid=0x0403;
 int pid=0x6001;
 
-int ftdi_list_all() {
-    struct ftdi_context *fc = ftdi_new();
+#define RESET_BIT (0x44)
+#define BM_BIT (0x22)
+
+
+struct ftdi_context *fc = NULL;
+
+void ftdi_checksum(unsigned char *buf) {
+  unsigned short checksum = 0xAAAA;
+  int i;
+  for (i = 0; i < (FTDI_DEFAULT_EEPROM_SIZE)/2-1; i++)
+  {
+    unsigned short value = buf[i*2];
+    value |= buf[(i*2)+1] << 8;
+    checksum = value^checksum;
+    checksum = (checksum << 1) | (checksum >> 15);
+  }
+  
+  buf[(FTDI_DEFAULT_EEPROM_SIZE)-2] = checksum;
+  buf[(FTDI_DEFAULT_EEPROM_SIZE)-1] = checksum >> 8;
+  
+  printf("checksum=%04x\n", checksum);
+
+}
+
 void printFtdiString(unsigned char *eebuf, int offset) {
   offset = eebuf[offset] - 0x80;
   eebuf += offset;
@@ -38,6 +60,10 @@ void printFtdiString(unsigned char *eebuf, int offset) {
   }
   
 }
+
+int ftdiListAll() {
+  
+    fc = ftdi_new();
     
     if (fc == NULL) { fprintf(stderr, "ftdi_init failed\n"); return -1; }
     
