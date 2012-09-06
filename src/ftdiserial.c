@@ -47,10 +47,9 @@ int ftdi_list_all() {
     char serial[33];
       
     for (int i=0; i<count; i++) {
-      //TODO: fix usb_open SIGSEGV
-      int result = ftdi_usb_get_strings(fc, ptr, mnf, 32,  desc, 32, serial, 32);
+      int result = ftdi_usb_get_strings(fc, ptr->dev, mnf, 32,  desc, 32, serial, 32);
       
-      printf("%d [%d:%d] %s %s %s\n", i, vid, pid, serial, mnf, desc);
+      printf("(%d) [%x:%x] %s %s %s\n", i, vid, pid, serial, mnf, desc);
       ptr = ptr->next;
     }
     
