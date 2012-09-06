@@ -5,6 +5,21 @@
 
 #include <ftdi.h>
 
+#ifdef __MINGW32_VERSION
+
+#include <windows.h>
+
+void zzz(long time) {
+  Sleep(time);
+}
+
+#else
+
+void zzz(long time) {
+  usleep(time*1000);
+}
+
+#endif
 // Default VID:PID=0x0403:0x6001
 int vid=0x0403;
 int pid=0x6001;
