@@ -26,6 +26,18 @@ int pid=0x6001;
 
 int ftdi_list_all() {
     struct ftdi_context *fc = ftdi_new();
+void printFtdiString(unsigned char *eebuf, int offset) {
+  offset = eebuf[offset] - 0x80;
+  eebuf += offset;
+  int len = ((*eebuf)/2)-1;
+  
+  while (len>0) {
+    eebuf+=2;
+    printf("%c", *eebuf);
+    len--;
+  }
+  
+}
     
     if (fc == NULL) { fprintf(stderr, "ftdi_init failed\n"); return -1; }
     
@@ -78,6 +90,17 @@ int bindFtdi(const char *addr) {
 	    );
     return -1;
   }
+  
+}
+
+int printFtdiInfo() {
+      unsigned char eebuf[FTDI_DEFAULT_EEPROM_SIZE];
+      ftdi_read_eeprom(fc, eebuf);
+      
+      printf ("Manufacturer: "); printFtdiString(eebuf, 0x0e);
+      printf ("\nProduct:      "); printFtdiString(eebuf, 0x10);
+      printf ("\nSerial:       "); printFtdiString(eebuf, 0x12);
+      printf("\n");
   
 }
 
