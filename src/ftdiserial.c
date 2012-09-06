@@ -19,6 +19,16 @@ void zzz(long time) {
 }
 
 #endif
+
+#include <usb.h>
+
+void resetFtdi(struct ftdi_context *ftdi) {
+  printf("Cycling FT232R\n");
+  //TODO: link with libusb in win32
+  //usb_reset(ftdi->usb_dev);
+  zzz(1000);
+}
+
 // Default VID:PID=0x0403:0x6001
 int vid=0x0403;
 int pid=0x6001;
