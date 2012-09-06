@@ -27,7 +27,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
-#include <termios.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <getopt.h>
@@ -52,7 +51,7 @@ int writeFlash(const ReadWrite *chn, struct HexRecord *root) {
   	io_buffer = malloc(sizeof(uint8_t) * 1024);
 	data_buffer = malloc(sizeof(uint8_t) * 256);
 	
-	if (io_buffer != NULL || data_buffer !=NULL) {
+	if (io_buffer == NULL || data_buffer ==NULL) {
 		fprintf(stderr, "error allocating memory\n");
 		return -1;
 	}
