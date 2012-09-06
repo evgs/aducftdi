@@ -57,6 +57,58 @@ int ftdi_list_all() {
     
 }
 
+void closeFtdi(){
+    ftdi_usb_close(fc);
+    ftdi_deinit(fc);
+}
+
+int bindFtdi(const char *addr) {
+  if (fc==NULL) fc = ftdi_new();
+  
+  int result;
+  if (addr == NULL) {
+    result = ftdi_usb_open( fc, vid, pid);
+  } else {
+    result = ftdi_usb_open_string( fc, addr);
+  }
+  
+  if (result<0) {
+    fprintf(stderr, "unable to open ftdi device: %s\n",
+	    ftdi_get_error_string(fc)
+	    );
+    return -1;
+  }
+  
+}
+
+int aducFtdiReset(int pm) {
+    int bmMask = 0;
+  
+    if (pm) {
+      bmMask = BM_BIT;
+      printf("Holding down BM...\n");
+      ftdi_set_bitmode(fc, bmMask, BITMODE_CBUS);
+      zzz(100);
+    }
+
+    printf("Pulsing RESET ~\\__/~\n");
+
+    ftdi_set_bitmode(fc, bmMask | RESET_BIT, BITMODE_CBUS);
+    zzz(250);
+    ftdi_set_bitmode(fc, bmMask, BITMODE_CBUS);
+    
+    if (pm) {
+      printf("Entering bootloader mode...");
+      zzz(2000);
+
+      printf("[OK]\n");
+      ftdi_set_bitmode(fc, 0, BITMODE_CBUS);
+      zzz(250);
+    }
+  
+    ftdi_disable_bitbang(fc);
+}
+  
 
 int serial_read_fully(uint8_t *buffer, int count, int timeout)
 {
