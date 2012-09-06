@@ -10,4 +10,6 @@ struct HexRecord {
 	uint8_t data[0];
 };
 
+int process_ihexfile(const char *ihexfile, struct HexRecord **rec_p);
+
 #endif
