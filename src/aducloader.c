@@ -42,11 +42,11 @@ uint8_t *data_buffer;
 int reset;
 int follow;
 
-int aducISPPacket(uint8_t *buffer, char cmd, uint32_t address, const uint8_t *data, int data_len);
-void dump_buffer(FILE *f, const uint8_t *buffer, int len);
-void dump_text(FILE *f, const uint8_t *buffer, int len);
+static int aducISPPacket(uint8_t *buffer, char cmd, uint32_t address, const uint8_t *data, int data_len);
+static void dump_buffer(FILE *f, const uint8_t *buffer, int len);
+static void dump_text(FILE *f, const uint8_t *buffer, int len);
 
-int writeFlash(const ReadWrite *chn, struct HexRecord *root) {
+int writeAducFlash(const ReadWrite *chn, struct HexRecord *root) {
 
   	io_buffer = malloc(sizeof(uint8_t) * 1024);
 	data_buffer = malloc(sizeof(uint8_t) * 256);
@@ -71,15 +71,47 @@ int writeFlash(const ReadWrite *chn, struct HexRecord *root) {
 
 	len = chn->writeBlock(BACKSPACE, sizeof(BACKSPACE), 1000);
 	len = chn->readBlock(ptr, 24, 5000);
+	
+	if ( (len != 24) || (memcmp(ptr, "ADuC70", 6) != 0) ) {
+	    fprintf(stdout, "FAILED\n");
+	    return -1;
+	}
 
-	if ((len > 6) && (memcmp(ptr, "ADuC70", 6) == 0)) {
-		int product_len = (memchr(ptr, ' ', 24) - (void *)ptr);
-		fprintf(stdout, "Found %.*s\n", product_len, ptr);
+	int product_len = (memchr(ptr, ' ', 24) - (void *)ptr);
+	fprintf(stdout, "Found %.*s\n", product_len, ptr);
 
-		fprintf(stdout, "Erasing: ");
+	fprintf(stdout, "Erasing: ");
+	fflush(stdout);
+
+	len = aducISPPacket(ptr, 'E', 0x00000000, ERASE_ALL, sizeof(ERASE_ALL));
+	len = chn->writeBlock(ptr, len, 1000);
+	len = chn->readBlock(ptr, 1, 10000);
+
+	if ((len <= 0) || (ptr[0] != ACK)) {
+		fprintf(stdout, "FAILED\n");
+		return -1;
+	}
+
+	fprintf(stdout, "\nOK\n");
+
+	rec = root;
+	while (rec != NULL) {
+		int count = 0;
+		uint32_t address = rec->address;
+		uint8_t *data = data_buffer;
+		struct HexRecord *drec;
+
+		for (drec = rec; ((drec != NULL) && ((address + count) == drec->address) && ((count + drec->count) < DATA_BUFFER_SIZE)); drec = drec->next) {
+			memcpy(data, drec->data, drec->count);
+			data += drec->count;
+			count += drec->count;
+		}
+		rec = drec;
+
+		fprintf(stdout, "Writting (%#x): ", address);
 		fflush(stdout);
 
-		len = aducISPPacket(ptr, 'E', 0x00000000, ERASE_ALL, sizeof(ERASE_ALL));
+		len = aducISPPacket(ptr, 'W', address, data_buffer, count);
 		len = chn->writeBlock(ptr, len, 1000);
 		len = chn->readBlock(ptr, 1, 10000);
 
@@ -88,56 +120,24 @@ int writeFlash(const ReadWrite *chn, struct HexRecord *root) {
 			return -1;
 		}
 
-		fprintf(stdout, "\nOK\n");
+		fprintf(stdout, "OK\r");
+	}
+	fprintf(stdout, "OK\n");
 
-		rec = root;
-		while (rec != NULL) {
-			int count = 0;
-			uint32_t address = rec->address;
-			uint8_t *data = data_buffer;
-			struct HexRecord *drec;
+	if (reset) {
+		fprintf(stdout, "Resetting: ");
+		fflush(stdout);
 
-			for (drec = rec; ((drec != NULL) && ((address + count) == drec->address) && ((count + drec->count) < DATA_BUFFER_SIZE)); drec = drec->next) {
-				memcpy(data, drec->data, drec->count);
-				data += drec->count;
-				count += drec->count;
-			}
-			rec = drec;
+		len = aducISPPacket(ptr, 'R', 0x00000001, NULL, 0);
+		len = chn->writeBlock(ptr, len, 1000);
+		len = chn->readBlock(ptr, 1, 10000);
 
-			fprintf(stdout, "Writting (%#x): ", address);
-			fflush(stdout);
-
-			len = aducISPPacket(ptr, 'W', address, data_buffer, count);
-			len = chn->writeBlock(ptr, len, 1000);
-			len = chn->readBlock(ptr, 1, 10000);
-
-			if ((len <= 0) || (ptr[0] != ACK)) {
-				fprintf(stdout, "FAILED\n");
-				return -1;
-			}
-
-			fprintf(stdout, "OK\r");
+		if ((len <= 0) || (ptr[0] != ACK)) {
+			fprintf(stdout, "FAILED\n");
+			return -1;
 		}
+
 		fprintf(stdout, "OK\n");
-
-		if (reset) {
-			fprintf(stdout, "Resetting: ");
-			fflush(stdout);
-
-			len = aducISPPacket(ptr, 'R', 0x00000001, NULL, 0);
-			len = chn->writeBlock(ptr, len, 1000);
-			len = chn->readBlock(ptr, 1, 10000);
-
-			if ((len <= 0) || (ptr[0] != ACK)) {
-				fprintf(stdout, "FAILED\n");
-				return -1;
-			}
-
-			fprintf(stdout, "OK\n");
-		}
-	} else {
-		fprintf(stdout, "FAILED\n");
-		return -1;
 	}
 
 	return 0;

@@ -111,7 +111,7 @@ int main(int argc, char **argv) {
   
   setFtdiBaudRate(115200);
   
-  int flashresult = writeFlash(getFtdiReadWrite(), root);
+  int flashresult = writeAducFlash(getFtdiReadWrite(), root);
   //leave programming mode
   aducFtdiReset(0);
   
