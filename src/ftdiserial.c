@@ -131,6 +131,10 @@ int bindFtdi(const char *addr) {
   
 }
 
+int flushFtdi(){
+  return ftdi_usb_purge_buffers(fc);
+}
+
 int setFtdiBaudRate(int baudrate) {
   ftdi_set_line_property(fc, BITS_8, STOP_BIT_1, NONE);
   return ftdi_set_baudrate(fc, baudrate);
