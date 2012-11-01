@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include <stdlib.h>
+#include <string.h>
 #include "serial.h"
 
 #include "ftdiserial.h"
@@ -81,7 +82,19 @@ parse_opt (int key, char *arg, struct argp_state *state)
 // Our argp parser.
 //static struct argp argp = { options, parse_opt, args_doc, doc };
 static struct argp argp = { options, parse_opt, NULL, doc };
-*/     
+*/
+
+void advFlash() {
+    char tmp[40];
+    
+    memset(tmp, ' ', 32);
+    getFtdiReadWrite()->writeBlock(tmp, 32, 1000);
+    getFtdiReadWrite()->readBlock(tmp, 40, 200);
+
+    flushFtdi();
+  
+}
+
 int main(int argc, char **argv) {
     struct arguments arguments;
      
@@ -106,10 +119,13 @@ int main(int argc, char **argv) {
   
   printFtdiInfo();
   
+  setFtdiBaudRate(115200);
+  
+  //flushFtdi();
+  advFlash();
+
   //enter programming mode
   aducFtdiReset(1);
-  
-  setFtdiBaudRate(115200);
   
   flushFtdi();
   
