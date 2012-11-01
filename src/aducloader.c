@@ -69,9 +69,13 @@ int writeAducFlash(const ReadWrite *chn, struct HexRecord *root) {
 	fprintf(stdout, "Trying to synchronize with ADuC70xx: ");
 	fflush(stdout);
 
+	len = chn->readBlock(ptr, 100, 100); //dummy read
+	
 	len = chn->writeBlock(BACKSPACE, sizeof(BACKSPACE), 1000);
 	len = chn->readBlock(ptr, 24, 5000);
 	
+	hexdump(ptr, len);
+
 	if ( (len != 24) || (memcmp(ptr, "ADuC70", 6) != 0) ) {
 	    fprintf(stdout, "FAILED\n");
 	    return -1;

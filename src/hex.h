@@ -2,6 +2,7 @@
 #define HEX_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 struct HexRecord {
 	struct HexRecord *next;
@@ -11,5 +12,7 @@ struct HexRecord {
 };
 
 int process_ihexfile(const char *ihexfile, struct HexRecord **rec_p);
+
+void hexdump(const char * buf, size_t length);
 
 #endif

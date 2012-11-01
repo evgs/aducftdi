@@ -189,3 +189,43 @@ close:
 
 	return rc;
 }
+
+
+void hexdump(const char * buf, size_t length) {
+  int addr=0;
+
+  printf("\n");
+    
+  while (length>0) {
+    int strlen = 16;
+    int padding = 0;
+    
+    if (strlen>length) {
+      strlen = length; 
+      padding = 16-length;
+    }
+    
+    printf("%04x  ",addr);
+    
+    for (int i=0; i<strlen; i++) {
+      printf("%02x ", *(buf+addr+i) );
+    }
+    
+    for (int i=0; i<padding; i++) { printf("   "); }
+    
+    printf("|");
+
+    for (int i=0; i<strlen; i++) {
+      unsigned char c = *((unsigned char *)(buf+addr+i));
+      if ( c < 32 || c > 126 ) c='.';
+      printf("%c", c );
+    }
+
+    for (int i=0; i<padding; i++) { printf(" "); }
+    
+    printf("|\n");
+    
+    addr+=strlen;
+    length-=strlen;
+  }
+}
