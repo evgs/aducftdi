@@ -110,6 +110,7 @@ int main(int argc, char **argv) {
   //argp_parse (&argp, argc, argv, 0, 0, &arguments);
 
   //return (ftdiListAll()>=0) ? 0:-1;
+  if (argc==2) arguments.firmwarename = argv[1];
   
   struct HexRecord * root;
   
