@@ -171,15 +171,14 @@ int aducFtdiReset(int pm) {
     ftdi_set_bitmode(fc, bmMask, BITMODE_CBUS);
     
     if (pm) {
-      printf("Entering bootloader mode...");
+      printf("Entering bootloader mode...\n");
       zzz(2000);
 
-      printf("[OK]\n");
       ftdi_set_bitmode(fc, 0, BITMODE_CBUS);
       zzz(250);
     }
   
-    ftdi_disable_bitbang(fc);
+    //ftdi_disable_bitbang(fc);
 }
   
 #include "timeout.h"
@@ -192,7 +191,6 @@ int serial_read_fully(uint8_t *buffer, int count, int timeout)
 
   while (count>0) {
     int r=ftdi_read_data(fc, ptr, count);
-    
     count-=r; ptr+=r;
     if (isTimeout()) break;
   }
