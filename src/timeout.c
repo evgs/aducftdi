@@ -13,7 +13,9 @@ void setTimeout(int ms) {
 }
 
 int isTimeout() {
-  return endTime - GetTickCount() < 0;
+  int remaining = endTime - GetTickCount();
+  //printf("%d\n", remaining);
+  return remaining < 0;
 };
 
 void cancelTimeout() {};
